@@ -2258,8 +2258,7 @@ mod tests {
             .unwrap();
 
         // Then
-        // Assert that the contract class returned by the `get_block_with_txs` method of the Beerus light client
-        // is the expected contract class.
+        // Assert that the block data returned by the `get_block_with_txs` method of the Beerus light client
         assert_eq!(format!("{result:?}"), format!("{expected_value_value:?}"))
     }
 

@@ -2180,7 +2180,7 @@ mod test {
         // Set the expected return value for the StarkNet light client mock.
         starknet_lightclient
             .expect_get_block_with_txs()
-            .return_once(move |_block_id| Err(eyre::eyre!("cannot query starknet contract class")));
+            .return_once(move |_block_id| Err(eyre::eyre!("cannot query starknet block with txs")));
 
         let beerus = BeerusLightClient::new(
             config,
@@ -2203,7 +2203,7 @@ mod test {
         assert_eq!(response.status(), Status::InternalServerError);
         assert_eq!(
             response.into_string().await.unwrap(),
-            "{\"error_message\":\"cannot query starknet contract class\"}"
+            "{\"error_message\":\"cannot query starknet block with txs\"}"
         );
     }
 

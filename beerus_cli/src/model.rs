@@ -443,7 +443,7 @@ impl Display for CommandResponse {
                 write!(f, "{json_response}")
             }
 
-            // Print the current block hash and number.
+            // Print the block data with its transactions.
             // Result looks like: `
             CommandResponse::StarknetQueryBlockWithTxs(response) => {
                 write!(f, "Block hash: {response:?}")
