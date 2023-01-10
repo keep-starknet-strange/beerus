@@ -5,13 +5,13 @@ use mockall::automock;
 use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
-        models::FunctionCall,
-        models::{BlockHashAndNumber, BlockId, ContractClass},
+        models::{
+            BlockHashAndNumber, BlockId, ContractClass, FunctionCall, MaybePendingBlockWithTxs,
+        },
         HttpTransport, JsonRpcClient,
     },
 };
 use url::Url;
-
 pub mod storage_proof;
 
 #[automock]
@@ -39,6 +39,7 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         contract_address: FieldElement,
     ) -> Result<ContractClass>;
+    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -191,6 +192,23 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ) -> Result<ContractClass> {
         self.client
             .get_class_at(block_id, contract_address)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the transactions of a given block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
+        self.client
+            .get_block_with_txs(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
