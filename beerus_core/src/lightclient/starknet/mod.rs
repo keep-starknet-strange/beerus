@@ -6,7 +6,7 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::{
-            BlockHashAndNumber, BlockId, ContractClass, FunctionCall, MaybePendingBlockWithTxs,
+            BlockHashAndNumber, BlockId, ContractClass, FunctionCall, MaybePendingBlockWithTxHashes,
         },
         HttpTransport, JsonRpcClient,
     },
@@ -39,7 +39,10 @@ pub trait StarkNetLightClient: Send + Sync {
         block_id: &BlockId,
         contract_address: FieldElement,
     ) -> Result<ContractClass>;
-    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs>;
+    async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -204,11 +207,14 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     ///
     /// # Returns
     ///
-    /// `Ok(MaybePendingBlockWithTxs)` if the operation was successful.
+    /// `Ok(MaybePendingBlockWithTxHashes)` if the operation was successful.
     /// `Err(eyre::Report)` if the operation failed.
-    async fn get_block_with_txs(&self, block_id: &BlockId) -> Result<MaybePendingBlockWithTxs> {
+    async fn get_block_with_tx_hashes(
+        &self,
+        block_id: &BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes> {
         self.client
-            .get_block_with_txs(block_id)
+            .get_block_with_tx_hashes(block_id)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
