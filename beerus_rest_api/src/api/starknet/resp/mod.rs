@@ -82,3 +82,9 @@ pub struct QueryGetClassAtResponse {
     pub entry_points_by_type: Value,
     pub program: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryBlockWithTxsResponse {
+    pub block_with_txs: String,
+}

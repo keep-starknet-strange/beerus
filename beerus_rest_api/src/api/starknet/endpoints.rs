@@ -1,7 +1,7 @@
 use super::resp::{
-    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryChainIdResponse,
-    QueryContractViewResponse, QueryGetClassAtResponse, QueryGetClassResponse,
-    QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
+    QueryBlockHashAndNumberResponse, QueryBlockNumberResponse, QueryBlockWithTxsResponse,
+    QueryChainIdResponse, QueryContractViewResponse, QueryGetClassAtResponse,
+    QueryGetClassResponse, QueryGetStorageAtResponse, QueryL1ToL2MessageCancellationsResponse,
     QueryL1ToL2MessageNonceResponse, QueryL1ToL2MessagesResponse, QueryNonceResponse,
     QueryStateRootResponse,
 };
@@ -126,19 +126,6 @@ pub async fn query_l1_to_l2_message_nonce(
     ApiResponse::from_result(query_l1_to_l2_message_nonce_inner(beerus).await)
 }
 
-/// Query the contract class definition in the given block associated with the given hash.
-/// The contract class definition.
-///
-/// # Arguments
-///
-/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
-/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
-/// * `class_hash` - The class hash.
-///
-/// # Returns
-///
-/// `Ok(ContractClass)` if the operation was successful.
-/// `Err(eyre::Report)` if the operation failed.
 #[openapi]
 #[get("/starknet/contract/class/<class_hash>?<block_id>&<block_id_type>")]
 pub async fn get_class(
@@ -150,19 +137,6 @@ pub async fn get_class(
     ApiResponse::from_result(get_class_inner(beerus, block_id_type, block_id, class_hash).await)
 }
 
-/// Query the contract class definition in the given block associated with the contract address.
-/// The contract class definition.
-///
-/// # Arguments
-///
-/// * `block_id_type` - Type of block identifier. eg. hash, number, tag
-/// * `block_id` - The block identifier. eg. 0x123, 123, pending, or latest
-/// * `contract_address` - The contract address.
-///
-/// # Returns
-///
-/// `Ok(ContractClass)` if the operation was successful.
-/// `Err(eyre::Report)` if the operation failed.
 #[openapi]
 #[get("/starknet/contract/class_at/<contract_address>?<block_id>&<block_id_type>")]
 pub async fn get_class_at(
@@ -176,6 +150,15 @@ pub async fn get_class_at(
     )
 }
 
+#[openapi]
+#[get("/starknet/block_with_txs/<block_id>?<block_id_type>")]
+pub async fn get_block_with_txs(
+    beerus: &State<BeerusLightClient>,
+    block_id: String,
+    block_id_type: String,
+) -> ApiResponse<QueryBlockWithTxsResponse> {
+    ApiResponse::from_result(get_block_with_txs_inner(beerus, block_id_type, block_id).await)
+}
 /// Query the state root of StarkNet.
 ///
 /// # Arguments
@@ -480,5 +463,25 @@ pub async fn get_class_at_inner(
         program: base64::encode(&result.program),
         entry_points_by_type: serde_json::value::to_value(&result.entry_points_by_type).unwrap(),
         abi: serde_json::value::to_value(result.abi.unwrap()).unwrap(),
+    })
+}
+
+/// Query block with txs
+/// # Returns
+/// `Block With Txs` - Block data with transactions list
+pub async fn get_block_with_txs_inner(
+    beerus: &State<BeerusLightClient>,
+    block_id_type: String,
+    block_id: String,
+) -> Result<QueryBlockWithTxsResponse> {
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    debug!("Querying Block with Txs");
+    let result = beerus
+        .starknet_lightclient
+        .get_block_with_txs(&block_id)
+        .await?;
+    Ok(QueryBlockWithTxsResponse {
+        block_with_txs: format!("{result:?}"),
     })
 }
