@@ -6,7 +6,7 @@ use starknet::{
     core::types::FieldElement,
     providers::jsonrpc::{
         models::FunctionCall,
-        models::{BlockHashAndNumber, BlockId, ContractClass},
+        models::{BlockHashAndNumber, BlockId, ContractClass, Transaction},
         HttpTransport, JsonRpcClient,
     },
 };
@@ -40,6 +40,11 @@ pub trait StarkNetLightClient: Send + Sync {
         contract_address: FieldElement,
     ) -> Result<ContractClass>;
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64>;
+    async fn get_transaction_by_block_id_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction>;
 }
 
 pub struct StarkNetLightClientImpl {
@@ -210,6 +215,28 @@ impl StarkNetLightClient for StarkNetLightClientImpl {
     async fn get_block_transaction_count(&self, block_id: &BlockId) -> Result<u64> {
         self.client
             .get_block_transaction_count(block_id)
+            .await
+            .map_err(|e| eyre::eyre!(e))
+    }
+
+    /// Get the transaction given a block id and index
+    /// The number of transactions in a block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - The block identifier.
+    /// * `index` - Transaction index
+    /// # Returns
+    ///
+    /// `Ok(Transaction)` if the operation was successful.
+    /// `Err(eyre::Report)` if the operation failed.
+    async fn get_transaction_by_block_id_and_index(
+        &self,
+        block_id: &BlockId,
+        index: u64,
+    ) -> Result<Transaction> {
+        self.client
+            .get_transaction_by_block_id_and_index(block_id, index)
             .await
             .map_err(|e| eyre::eyre!(e))
     }
