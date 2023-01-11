@@ -88,3 +88,9 @@ pub struct QueryGetClassAtResponse {
 pub struct QueryGetBlockTransactionCountResponse {
     pub block_transaction_count: String,
 }
+
+#[derive(Serialize, JsonSchema)]
+#[serde(crate = "rocket::serde")]
+pub struct QueryTransactionByBlockIdAndIndex {
+    pub transaction_data: String,
+}

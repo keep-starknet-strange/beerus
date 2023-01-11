@@ -282,3 +282,27 @@ pub async fn get_block_transaction_count(
             .await?,
     ))
 }
+
+/// Query the number of transactions in a block given a block id of the StarkNet network.
+/// # Arguments
+/// * `beerus` - The Beerus light client.
+/// * `block_id_type` - The type of block identifier.
+/// * `block_id` - The block identifier.
+/// # Returns
+/// * `Result<CommandResponse>` - The number of transactions in a block.
+pub async fn get_transaction_by_block_id_and_index(
+    beerus: BeerusLightClient,
+    block_id_type: String,
+    block_id: String,
+    index: String,
+) -> Result<CommandResponse> {
+    let index = u64::from_str(&index)?;
+    let block_id =
+        beerus_core::starknet_helper::block_id_string_to_block_id_type(&block_id_type, &block_id)?;
+    Ok(CommandResponse::StarknetQueryTransactionByBlockIdAndIndex(
+        beerus
+            .starknet_lightclient
+            .get_transaction_by_block_id_and_index(&block_id, index)
+            .await?,
+    ))
+}
